@@ -1,0 +1,107 @@
+#Student class
+class Student:
+
+  def __init__(self, name, year):
+    self.name = name
+    self.year = year
+    self.grades = []
+    self.attendance = {}
+
+  def __repr__(self):
+    return self.name + " has received the following " + str(len(self.grades)) + " grades: " + self.grade_strings() + " bringing their average to " + str(self.get_average()) + ". Here is a record of their recent attendance: " + str(self.attendance)
+
+  def add_grade(self, grade):
+    if type(grade) == Grade:
+      self.grades.append(grade.score)
+    else:
+      print("Invalid grade entry: " + str(grade) + ". Please enter in the format Grade(grade).") 
+
+  def grade_strings(self):
+    summary = ""
+    for i in range(len(self.grades) - 1):
+      summary += str(self.grades[i]) + ", "
+    summary += str(self.grades[-1])
+    return summary
+
+  def get_average(self):
+    average = sum(self.grades) / len(self.grades)
+    return round(average, 2)
+
+  def add_attendance(self, mm, dd, yyyy, in_class):
+    month = dd
+    day = mm
+    year = yyyy
+    self.attendance[str(mm)+'/'+str(dd)+'/'+str(yyyy)] = in_class
+
+#Grade class
+class Grade:
+  minimum_passing = 65
+  maximum = 100
+
+  def __init__(self, score):
+    self.score = score
+
+  def is_passing(self, score):
+    if maximum >= self.score >= Grade.minimum_passing:
+      return "pass"
+    elif maximum < self.score:
+      return "grade out of range"
+    else:
+      return "fail"
+
+#Teacher class
+class Teacher:
+
+  def __init__(self, name, pronoun, title):
+    self.name = name
+    self.title = title
+    self.pronoun = pronoun
+    self.subjects = []
+
+  def __repr__(self):
+    return self.pronoun + " " + self.name + ", " + self.title + " teaches the following subject(s): " + self.subject_strings()
+
+  def add_subject(self, subject_list):
+    if type(subject_list) == list:
+      for i in subject_list:
+        if i not in self.subjects:
+          self.subjects.append(i)
+        else:
+          print("subject already added")
+    elif type(subject_list) == str: 
+      self.subjects.append(subject_list)
+
+  def subject_strings(self):
+    summary = ""
+    if len(self.subjects) > 1:
+      for i in range(len(self.subjects) -1):
+        summary += str(self.subjects[i]) + ", "
+      summary += str(self.subjects[-1])
+    elif len(self.subjects) == 1:
+      summary += self.subjects[0]
+    else:
+      summary += "no courses assigned yet"
+    return summary
+
+roger = Student("Roger van der Weyden", 10)
+sandro = Student("Sandro Botticelli", 12)
+pieter = Student("Pieter Bruegel the Elder", 8) 
+
+pieter.add_grade(Grade(100))
+pieter.add_grade(Grade(95))
+pieter.add_grade(Grade(87))
+pieter.add_grade(Grade(93))
+pieter.add_grade(Grade(79))
+pieter.add_grade(Grade(88))
+
+
+sandro.grades.extend([75, 98, 68, 90, 69])
+pieter.attendance.update({"12/12/20": True, "12/13/20": False, "12/14/20": True})
+pieter.add_attendance(12, 15, 2020, True)
+print(pieter)
+
+mr_teacher = Teacher("Homer Simpson", "Dr.", "PhD")
+
+mr_teacher.add_subject("history")
+mr_teacher.add_subject(["art", "science"])
+print(mr_teacher)
