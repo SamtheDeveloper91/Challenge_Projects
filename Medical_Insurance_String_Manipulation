@@ -1,0 +1,85 @@
+medical_data = \
+"""Marina Allison   ,27   ,   31.1 , 
+#7010.0   ;Markus Valdez   ,   30, 
+22.4,   #4050.0 ;Connie Ballard ,43 
+,   25.3 , #12060.0 ;Darnell Weber   
+,   35   , 20.6   , #7500.0;
+Sylvie Charles   ,22, 22.1 
+,#3022.0   ;   Vinay Padilla,24,   
+26.9 ,#4620.0 ;Meredith Santiago, 51   , 
+29.3 ,#16330.0;   Andre Mccarty, 
+19,22.7 , #2900.0 ; 
+Lorena Hodson ,65, 33.1 , #19370.0; 
+Isaac Vu ,34, 24.8,   #7045.0"""
+
+# Add your code here
+#Change # to $
+updated_medical_data = medical_data.replace('#', '$')
+num_records = 0
+
+#Count number of records using $ indicator
+for character in updated_medical_data:
+  if character == '$':
+    num_records += 1
+
+#Split data into one record for each patient on ';'
+medical_data_split = [i for i in updated_medical_data.split(";")]
+
+#Create a list of lists so that each patient has a list of attributes
+medical_records = []
+for i in medical_data_split:
+  j = i.split(',')
+  medical_records.append(j)
+
+#Strip unnecessary whitespace from patient records
+medical_records_clean = []
+for record in medical_records:
+  record_clean = []
+  for item in record:
+    item = item.strip()
+    record_clean.append(item)
+  medical_records_clean.append(record_clean)
+
+#Print the names of each patient
+for record in medical_records_clean:
+  record[0] = record[0].title()
+
+#Create lists for each attribute
+names = [patient[0] for patient in medical_records_clean]
+ages = [patient[1] for patient in medical_records_clean]
+bmis = [patient[2] for patient in medical_records_clean]
+insurance_costs = [patient[3] for patient in medical_records_clean]
+
+#Calculate average bmi across all patients
+#Change datatype from str to float
+for i in range(len(bmis)):
+  bmis[i] = float(bmis[i])
+average_bmi = sum(bmis)/len(bmis)
+print("Average BMI: " + str(round(average_bmi, 2)))
+
+
+for i in range(len(insurance_costs)):
+  insurance_costs[i] = float(insurance_costs[i].strip('$'))
+
+average_cost = sum(insurance_costs)/len(insurance_costs)
+print("Average insurance cost: $" + str(average_cost))
+
+#for patient in medical_records_clean:
+  #print(patient[0].split()[0] + " is " + patient[1] + " years old with a BMI of " + patient[2] + " and an insurance cost of " + patient[3] + ".")
+
+class Patient:
+  def __init__(self, name, age, bmi, insurance_cost):
+    self.name = name
+    self.age = age
+    self.bmi = bmi
+    self.insurance_cost = insurance_cost
+    self.description = self.name + " is " + self.age + " years old with a BMI of " + str(self.bmi) + " and an insurance cost of $" + str(self.insurance_cost) + "."
+  def __repr__(self):
+    return self.description  
+
+  
+
+marina = Patient(names[0], ages[0], bmis[0], insurance_costs[0])
+print(marina)
+markus = Patient(names[1], ages[1], bmis[1], insurance_costs[1])
+print(markus)
