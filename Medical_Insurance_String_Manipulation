@@ -76,10 +76,15 @@ class Patient:
     self.description = self.name + " is " + self.age + " years old with a BMI of " + str(self.bmi) + " and an insurance cost of $" + str(self.insurance_cost) + "."
   def __repr__(self):
     return self.description  
-
   
-
+#Create class objects for each patient record
 marina = Patient(names[0], ages[0], bmis[0], insurance_costs[0])
-print(marina)
 markus = Patient(names[1], ages[1], bmis[1], insurance_costs[1])
-print(markus)
+connie = Patient(names[2], ages[2], bmis[2], insurance_costs[2])
+darnell = Patient(names[3], ages[3], bmis[3], insurance_costs[3])
+sylvie = Patient(names[4], ages[4], bmis[4], insurance_costs[4])
+vinay = Patient(names[5], ages[5], bmis[5], insurance_costs[5])
+meredith = Patient(names[6], ages[6], bmis[6], insurance_costs[6])
+andre = Patient(names[7], ages[7], bmis[7], insurance_costs[7])
+lorena = Patient(names[8], ages[8], bmis[8], insurance_costs[8])
+isaac = Patient(names[9], ages[9], bmis[9], insurance_costs[9])
