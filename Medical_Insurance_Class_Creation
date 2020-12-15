@@ -1,0 +1,148 @@
+import numpy as np
+from datetime import datetime as dt
+import pandas as pd
+from matplotlib import pyplot as plt
+
+
+now = dt.now()
+class Patient:
+  def __init__(self, name, age, sex, bmi, num_of_children, smoker):
+    self.instructions = "Enter all variables as numbers, with the exception of the name, which should be entered as a string."
+    self.age_history = [age]
+    self.bmi_history = [bmi]
+    self.smoker_history = [smoker]
+    self.children_history = [num_of_children]
+    self.sex_history = [sex]
+    self.name_history = [name]
+    self.update_dates = []
+    self.insurance_cost_history = []
+    self.update_dictionary = {}
+    
+    try:
+      self.name = str(name)
+      self.age = age
+      self.sex = int(sex)
+      self.bmi = bmi
+      self.num_of_children = num_of_children
+      self.smoker = int(smoker)
+    except ValueError:
+      print(self.instructions)
+  
+  #add estimated insurance cost method
+  def estimated_insurance_cost(self):
+    estimated_cost = 250*self.age - self.sex + 370*self.bmi + 425*self.num_of_children + 24000*self.smoker - 12500
+    print("{}'s estimated insurance cost is {} dollars.".format(self.name, estimated_cost))
+    self.insurance_cost_history.append(estimated_cost)
+    return estimated_cost
+  
+  #add update age method
+  def update_age(self, new_age): 
+    new_entry = []
+    if type(new_age) == int and new_age != self.age:
+        self.age = new_age
+        print("{name} is now {age} years old.".format(name = self.name, age = self.age))
+        self.age_history.append(self.age)
+        self.estimated_insurance_cost()
+        new_entry.append("age")
+        new_entry.append(self.age)
+        new_entry.append(str(now))
+        self.update_dates.append(new_entry)
+        self.update_dictionary.update({"age": [new_age, str(now)]})
+    elif type(new_age) == int and new_age == self.age:
+      print("{name}'s age hasn't changed.".format(name=self.name))
+    elif type(new_age) == list:
+      for i in range(len(new_age)):
+        self.age_history.append(new_age[i])
+        new_entry.append("age")
+        new_entry.append(new_age[i])
+        new_entry.append(str(now))
+      self.update_dates.append(new_entry)
+      self.update_dictionary.update({"age": [new_age, str(now)]})
+      self.estimated_insurance_cost()
+    else:
+      print("Please enter age as an integer (e.g. 25).")
+  
+  #add method to update children
+  def update_num_children(self, new_num_children):
+    new_entry = []
+    if self.num_of_children != new_num_children and new_num_children == 1:
+      self.num_of_children = new_num_children
+      print("{name} now has {num_of_children} child.".format(name=self.name, num_of_children = self.num_of_children))
+      new_entry.append("children")
+      self.children_history.append(self.num_of_children)
+      new_entry.append(self.num_of_children)
+      new_entry.append(str(now))
+      self.update_dates.append(new_entry)
+      self.update_dictionary.update({"children": [new_num_children, str(now)]})
+    elif type(new_num_children) == int and self.num_of_children != new_num_children and new_num_children > 1:
+      self.num_of_children = new_num_children
+      print("{name} now has {num_of_children} children.".format(name=self.name, num_of_children = self.num_of_children))
+      new_entry.append("children")
+      self.children_history.append(self.num_of_children)
+      new_entry.append(self.num_of_children)
+      new_entry.append(str(now))
+      self.update_dates.append(new_entry)
+      self.update_dictionary.update({"children": [new_num_children, str(now)]})
+    elif self.num_of_children == new_num_children:
+      print("There's been no change in {name}'s number of children.".format(self.name))
+    elif type(new_num_children) == list and len(new_num_children) > 1:
+      for child in new_num_children:
+        new_entry.append("children")
+        self.children_history.append(child)
+        new_entry.append(child)
+        new_entry.append(str(now))
+      self.update_dates.append(new_entry)
+      self.update_dictionary.update({"children": [new_num_children, str(now)]})
+      self.estimated_insurance_cost()
+    else:
+      print("Please enter number of children as an integer (ex: 3).")
+
+  #add method to create patient profile
+  def patient_profile(self):
+    patient_information = {}
+    patient_information.update({"name": self.name, "age": self.age_history[-1], "sex": self.sex, "bmi":self.bmi_history[-1], "children": self.children_history[-1], "smoker": self.smoker})
+    print(patient_information)
+    return patient_information
+  
+  #add bmi method
+  def update_bmi(self, new_bmi):
+    new_entry = []
+    if type(new_bmi) == float:
+      self.bmi = new_bmi
+      print("{name}'s new bmi is {bmi}.".format(name=self.name, bmi=self.bmi))
+      self.bmi_history.append(new_bmi)
+      new_entry.append("bmi")
+      new_entry.append(new_bmi)
+      new_entry.append(str(now))
+      self.update_dates.append(new_entry)
+      self.update_dictionary.update({"bmi": [new_bmi, str(now)]})
+    elif type(new_bmi) == list:
+      for i in new_bmi:
+        new_entry.append("bmi")
+        self.bmi_history.append(i)
+        new_entry.append(i)
+        new_entry.append(str(now))
+      self.update_dates.append(new_entry)
+      self.update_dictionary.update({"bmi": [new_bmi, str(now)]})
+      self.estimated_insurance_cost()
+
+  #add smoking method
+  def update_smoking_status(self, new_smoking_status):
+    if self.smoker == new_smoking_status:
+      print("There's been no change in smoking status.")
+    elif self.smoker != new_smoking_status and new_smoking_status == 1:
+      print("{name} is now a smoker.".format(name=self.name))
+      self.smoker = new_smoking_status
+    elif self.smoker != new_smoking_status and new_smoking_status == 0:
+      print("{name} is now a non-smoker.".format(name=self.name))
+      self.smoker = new_smoking_status
+
+#create first test instance variable of Patient
+patient1 = Patient("John Doe", 25, 1, 22.2, 0, 0)
+patient1.update_age([27, 28, 29, 30])
+patient1.update_num_children(1)
+patient1.update_num_children([2, 3, 4, 5])
+patient1.update_bmi([22.0, 22.4, 21.8, 23.4])
+patient1_profile = patient1.patient_profile()
+print(patient1.update_dates)
+print(patient1.update_dictionary)
