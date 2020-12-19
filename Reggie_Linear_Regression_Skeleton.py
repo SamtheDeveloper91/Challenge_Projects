@@ -222,7 +222,7 @@ calc_smallest_error(possible_ms, possible_bs, datapoints)
 
 # In[122]:
 
-
+#Use the get_y function to test out the best m and b!
 get_y(calc_smallest_error(possible_ms, possible_bs, datapoints)[0], calc_smallest_error(possible_ms, possible_bs, datapoints)[1], 6)
 
 
