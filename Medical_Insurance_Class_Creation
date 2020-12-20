@@ -18,15 +18,15 @@ class Patient:
     self.insurance_cost_history = []
     self.update_dictionary = {}
     
-    try:
-      self.name = str(name)
-      self.age = age
-      self.sex = int(sex)
-      self.bmi = bmi
-      self.num_of_children = num_of_children
-      self.smoker = int(smoker)
-    except ValueError:
-      print(self.instructions)
+      try:
+        self.name = str(name)
+        self.age = age
+        self.sex = int(sex)
+        self.bmi = bmi
+        self.num_of_children = num_of_children
+        self.smoker = int(smoker)
+      except ValueError:
+        print(self.instructions)
   
   #add estimated insurance cost method
   def estimated_insurance_cost(self):
