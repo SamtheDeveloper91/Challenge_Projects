@@ -1,0 +1,113 @@
+import codecademylib3_seaborn
+from bs4 import BeautifulSoup
+import requests
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from datetime import datetime
+
+#make request to webpage
+webpage_response = requests.get("https://content.codecademy.com/courses/beautifulsoup/cacao/index.html")
+
+#convert response to content
+webpage = webpage_response.content
+
+#make BeautifulSoup from content using html parser, then take a look
+soup = BeautifulSoup(webpage, "html.parser")
+print(soup)
+
+#find all values in the Ratings column, including the column title
+ratings_soup = soup.find_all(attrs = {"class": "Rating"})
+
+#make a list of all ratings, excluding the title
+ratings = []
+for rating in ratings_soup:
+  if rating.get_text() != "Rating":
+    ratings.append(float(rating.get_text()))
+
+#do the same for broad bean origin
+origin_soup = soup.find_all(attrs = {"class": "BroadBeanOrigin"})
+
+origins = []
+for origin in origin_soup:
+  origins.append(origin.get_text())
+origins.pop(0)
+
+#and companies
+company_soup = soup.find_all(attrs = {"class": "Company"})
+companies = []
+for company in company_soup:
+  companies.append(company.get_text())
+companies.pop(0)
+
+#and cocoa percentage
+cocoa_soup = soup.find_all(attrs = {"class": "CocoaPercent"})
+cocoa_pcts = []
+for pct in cocoa_soup:
+  cocoa_pcts.append(pct.get_text().strip('%'))
+cocoa_pcts.pop(0)
+
+#convert cocoa % strings to float
+cocoa_float = []
+for i in cocoa_pcts:
+  cocoa_float.append(float(i))
+
+#specific bean
+specific_bean_soup = soup.find_all(attrs = {"class": "Origin"})
+specific_beans = []
+for bean in specific_bean_soup:
+  specific_beans.append(bean.get_text())
+specific_beans.pop(0)
+
+REFs = []
+review_dates = []
+company_locations = []
+bean_types = []
+
+fields = ["REF", "Review Date", "Company Location", "Bean Type"]
+
+def create_list(empty_list, class_name):
+  field_soup = soup.find_all(attrs = {"class": class_name})
+  for value in field_soup:
+    empty_list.append(value.get_text())
+  empty_list.pop(0)
+  return empty_list
+
+create_list(REFs, "REF")
+
+create_list(review_dates, "ReviewDate")
+review_years = []
+for date in review_dates:
+  real_date = datetime.strptime(date, "%Y")
+  review_years.append(real_date.year)
+
+create_list(company_locations, "CompanyLocation")
+create_list(bean_types, "BeanType")
+
+#create pandas dataframe from the ratings and company lists
+choc_df = pd.DataFrame({"Company": companies, "Specific Bean Origin or Bar Name": specific_beans, "REF": REFs, "Review Date": review_years, "Cocoa Percent": cocoa_float, "Company Location": company_locations, "Rating": ratings, "Bean Type": bean_types, "Broad Bean Origin": origins})
+choc_df["Cocoa Rating"] = choc_df["Cocoa Percent"]*choc_df["Rating"]
+
+choc_df['Bean Type'].replace('\xa0', '', inplace=True)
+
+#adjust df to group statistics by company
+mini_df = choc_df[["Company", "Cocoa Percent", "Rating", "Cocoa Rating"]]
+mini_df_by_company = mini_df.groupby(["Company"]).mean().nlargest(25, "Cocoa Rating")
+choc_df_by_company = choc_df.groupby(["Company"]).mean().nlargest(10, 'Cocoa Percent')
+print(choc_df_by_company)
+print(mini_df_by_company)
+
+#create matplotlib histogram of ratings
+fig = plt.figure(figsize=(12, 18))
+plt.subplot(211)
+plt.hist(ratings, edgecolor='black', linewidth=1.2)
+plt.title("Chocolate Bar Ratings")
+plt.xlabel("Rating")
+plt.ylabel("Frequency")
+plt.subplot(212)
+plt.scatter(choc_df['Cocoa Percent'], choc_df['Rating'], color='purple', edgecolor='black', linewidth=1.2)
+plt.title("Ratings vs Cocoa Pct")
+plt.xlabel("Avg. Cocoa Pct")
+plt.ylabel("Avg. Rating")
+plt.tight_layout()
+plt.show()
