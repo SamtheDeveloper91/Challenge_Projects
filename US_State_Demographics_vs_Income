@@ -1,0 +1,97 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import codecademylib3_seaborn
+import glob
+
+files = glob.glob("states[0-9].csv")
+#print(files)
+df_list = []
+for filename in files:
+  df_files = pd.read_csv(filename)
+  df_list.append(df_files)
+#print(df_list)
+df = pd.concat(df_list)
+
+df.drop('Unnamed: 0', axis=1, inplace=True)
+#print(df.head())
+
+#remove special characters like % and $
+df[['Hispanic', 'White', 'Black', 'Native', 'Asian', 'Pacific', 'Income']] = df[['Hispanic', 'White', 'Black', 'Native', 'Asian', 'Pacific', 'Income']].apply(lambda x: x.str.strip('%$'))
+
+#convert data types from string to numeric
+df[['Hispanic', 'White', 'Black', 'Native', 'Asian', 'Pacific', 'Income']] = df[['Hispanic', 'White', 'Black', 'Native', 'Asian', 'Pacific', 'Income']].apply(pd.to_numeric)
+
+#split the GenderPop field into male and female
+df[['Male', 'Female']] = df['GenderPop'].str.split('_', expand=True)
+
+#remove M and F from GenderPop and convert to numeric
+df[['Male', 'Female']] = df[['Male', 'Female']].apply(lambda x: x.str.strip('MF'))
+
+df[['Male', 'Female']] = df[['Male', 'Female']].apply(pd.to_numeric)
+
+#drop the old GenderPop column
+df.drop('GenderPop', axis=1, inplace=True)
+
+percent_cols_old = ['Hispanic', 'White', 'Black', 'Native', 'Asian', 'Pacific']
+percent_cols_new = []
+
+for i in range(len(percent_cols_old)):
+  percent_cols_new.append(percent_cols_old[i] + " (%)")
+#print(percent_cols)
+
+df.rename(
+    columns={i:j for i,j in zip(percent_cols_old,percent_cols_new)}, inplace=True
+)
+df['Female'].fillna(df['TotalPop'] - df['Male'], inplace=True)
+df['Female'] = df['Female'].astype('int64')
+#print(df)
+#print(df.dtypes)
+
+df.drop_duplicates(inplace=True)
+#print(df.duplicated().value_counts())
+
+df['Pacific (%)'].fillna(100-df['White (%)']-df['Black (%)']-df['Hispanic (%)']-df['Native (%)']-df['Asian (%)'], inplace=True)
+
+df['Female (%)'] = df.Female/(df.Female + df.Male)
+df['Male (%)'] = df.Male/(df.Female + df.Male)
+print(df.head())
+
+fig, ax = plt.subplots(figsize=(6, 4))
+plt.scatter(df['Female (%)'], df['Income'], color='purple', edgecolor='black', linewidth=.8, alpha=.5) 
+ax.set_xlabel('% populaiton')
+ax.set_ylabel('income')
+ax.set_title('Income vs % Female Population')
+plt.show()
+
+fig, ax = plt.subplots()
+for demographic in percent_cols_new:
+  plt.scatter(df[demographic], df['Income'])
+plt.xlabel('% population')
+plt.ylabel('income ($)')
+plt.title('Income by % Population')
+plt.legend(labels=percent_cols_new)
+plt.show()
+#print(df.columns)
+
+fig, axs = plt.subplots(6, figsize=(6,16))
+axs[0].hist(df['Hispanic (%)'])
+axs[1].hist(df['Black (%)'])
+axs[2].hist(df['Native (%)'])
+axs[3].hist(df['Asian (%)'])
+axs[4].hist(df['Pacific (%)'])
+axs[5].hist(df['White (%)'])
+
+axs[0].set_title('Hispanic')
+axs[1].set_title('Black')
+axs[2].set_title('Native')
+axs[3].set_title('Asian')
+axs[4].set_title('Pacific')
+axs[5].set_title('White')
+
+for x in range(0, 6):
+  axs[x].set_xlabel('% population')
+  axs[x].set_ylabel('frequency')
+
+plt.tight_layout()
+plt.show()
