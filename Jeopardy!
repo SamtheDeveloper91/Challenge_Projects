@@ -1,0 +1,179 @@
+import pandas as pd
+import re
+import numpy as np
+from datetime import datetime as dt
+from random import randint
+import os
+os.chdir('/Users/SamBudlong/Downloads/jeopardy_starting')
+
+pd.set_option('display.max_colwidth', -1)
+jdf = pd.read_csv('jeopardy.csv')
+print(jdf.head())
+
+#fix the column names
+jdf.columns = [column.strip() for column in jdf.columns]
+
+#convert Value type to float and fix NAs 
+jdf['Value'] = jdf.Value.str.strip('$').str.replace('None', '0').str.replace(',', '').astype('float').replace(0, np.nan)
+
+#convert air date to datetime format
+jdf['Air Date'] = pd.to_datetime(jdf['Air Date'])
+
+#convert the string of each round to a corresponding number in a new column
+jdf['Round Numeric'] = jdf['Round'].map({'Jeopardy!':1, 'Double Jeopardy!':2, 'Final Jeopardy!':3})
+
+#define words we want to search for
+#key_words = ["([A-Z]+'?\s|\s[A-Za-z]+\W[\s.,!?;:']?)"]
+key_words = ["(King'?\w+?\s|\sking\W[\s.,!?;:']?)"]
+king_words = ['(King|king)']
+  
+print(jdf.columns)
+
+#calculate the mean question word length for each dataframe
+def df_avg_word_length(dataframe):
+    total_len_q = 0
+    avg_question_lengths = []
+    avg_answer_lengths = []
+    for question in list(dataframe.Question):
+        for word in str(question).split(' '):
+            total_len_q += len(word)
+        avg_question_lengths.append(total_len_q/len(question.split(' ')))
+        total_len_q = 0
+    total_len_a = 0
+    for answer in list(dataframe.Answer):
+        for word in str(answer).split(' '):
+            total_len_a += len(word)
+        avg_answer_lengths.append(total_len_a/len(str(answer).split(' ')))
+        total_len_a = 0
+    return np.mean(avg_question_lengths), np.mean(avg_answer_lengths)
+print(df_avg_word_length(jdf))
+
+#we need to search each word in key_words within each question in all_questions, so we write a function that will work for any dataframe and any list of words
+def count_questions(dataframe, key_word_list):
+    df = pd.DataFrame(columns = jdf.columns)
+    all_questions = [dataframe.Question[i] for i in range(len(dataframe))]
+    check_list = []
+    counter = 0
+    for question in all_questions:
+        for word in key_word_list:
+            if re.search(word, question):
+            # or word.lower() in question or word.title() in question:
+                check_list.append(True)
+            else:
+                check_list.append(False)
+        if all(check_list) == True:
+            counter += 1
+            df = df.append(dataframe[dataframe['Question']==question])
+            check_list.clear()
+        else:
+            check_list.clear()
+    return df.reset_index(drop=True)
+test_df = count_questions(jdf, key_words)
+print(test_df.head())
+
+king_df = count_questions(jdf, king_words)
+print(king_df.Value.mean())
+#print(king_df.columns, king_df.head(), len(king_df))
+
+#calculate mean word length for each question or answer
+def row_avg_word_len(string_input):
+    total_len = 0
+    for word in str(string_input).split(' '):
+        total_len += len(word)
+    avg_len = total_len/len(str(string_input).split(' '))
+    return avg_len
+
+def num_words(string_input):
+    total_len = 0
+    for word in str(string_input).split(' '):
+        total_len += 1
+    return total_len
+
+def max_word_len(string_input):
+    words = []
+    for word in str(string_input).split(' '):
+        words.append(len(word))
+    return max(words)
+    
+ #we want to find all of the unique answers for the entire dataset
+def unique_answers(dataframe, words):
+    df = count_questions(dataframe, words)
+    return df.Answer.value_counts()
+
+print(unique_answers(jdf, king_words))
+
+#create column for average word length in each question and answer
+jdf['Avg Question Word Len'] = [row_avg_word_len(question) for question in jdf.Question]
+
+jdf['Avg Answer Word Len'] = [row_avg_word_len(answer) for answer in jdf.Answer]
+
+jdf['Max Answer Word Len'] = [max_word_len(answer) for answer in jdf.Answer]
+
+jdf['Words per Question'] = [num_words(question) for question in jdf.Question]
+
+jdf['Words per Answer'] = [num_words(answer) for answer in jdf.Answer]
+print(jdf['Words per Answer'].head())
+print(jdf['Avg Question Word Len'].head())
+print(jdf['Words per Question'].head())
+print(jdf['Avg Question Word Len'].head())
+
+#define dataframes for 90s and 2000s
+begin_90s = '1990-1-1'
+begin_00s = '2000-1-1'
+begin_10s = '2010-1-1'
+begin_20s = '2020-1-1'
+
+mask1 = (jdf['Air Date'] >= begin_90s) & (jdf['Air Date'] < begin_00s)
+mask2 = (jdf['Air Date'] >= begin_00s) & (jdf['Air Date'] < begin_10s)
+mask3 = (jdf['Air Date'] >= begin_10s) & (jdf['Air Date'] < begin_20s)
+
+df_90s = jdf.loc[mask1].reset_index(drop=True)
+df_00s = jdf.loc[mask2].reset_index(drop=True)
+df_10s = jdf.loc[mask3].reset_index(drop=True)
+
+round_value_corr = jdf[['Round Numeric', 'Value']].corr()
+word_len_value_corr = jdf[['Avg Question Word Len', 'Value']].corr()
+answer_len_value_corr = jdf[['Avg Answer Word Len', 'Value']].corr()
+print(round_value_corr)
+print(word_len_value_corr)
+print(answer_len_value_corr)
+
+#print(df_avg_word_length(df_90s))
+#print(df_avg_word_length(df_00s))
+#print(df_avg_word_length(df_10s))
+
+category_df = pd.DataFrame(jdf.groupby('Category')['Value', 'Avg Question Word Len', 'Avg Answer Word Len', 'Words per Question', 'Words per Answer', 'Max Answer Word Len'].mean().reset_index())
+
+for column in ['Avg Question Word Len', 'Avg Answer Word Len', 'Words per Question', 'Words per Answer', 'Max Answer Word Len']:
+    print(category_df[['Value', column]].corr())
+
+top_10_valuable_categories = category_df.sort_values(by=['Value'], ascending=False)[0:10]
+#print(top_10_valuable_categories[['Category', 'Value']])
+#print(top_10_valuable_categories[['Category', 'Avg Question Word Len']])
+#print(top_10_valuable_categories[['Category', 'Words per Question']])
+#print(top_10_valuable_categories[['Category', 'Avg Answer Word Len']])
+#print(top_10_valuable_categories[['Category', 'Max Answer Word Len']])
+
+def play_jeopardy(air_date):
+    df = jdf[jdf['Air Date'] == air_date].reset_index(drop=True)
+    i = randint(0, len(dataframe))
+    question = df.Question[i]
+    answer = df.Answer[i]
+    value = df.Value[i]
+    return question, value, answer
+    
+ play_jeopardy('2003-06-06')
+ 
+ def get_categories(air_date):
+    df = jdf[jdf['Air Date'] == air_date].reset_index(drop=True)
+    return list(zip(df.Category, df.Value))
+    
+ get_categories('2003-06-06')
+ 
+ answers = []
+def select_square(air_date, category, value):
+    df = jdf[jdf['Air Date']==air_date].reset_index(drop=True)
+    df1 = df[df['Category']==category].reset_index(drop=True)
+    df2 = df1[df1['Value']==value]
+    answers.append(df2.Answer)
+    return df2.Question
