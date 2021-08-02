@@ -1,9 +1,54 @@
+names = ["Mohamed", "Sara", "Xia", "Paul", "Valentina", "Jide", "Aaron", "Emily", "Nikita", "Paul"]
+insurance_costs = [13262.0, 4816.0, 6839.0, 5054.0, 14724.0, 5360.0, 7640.0, 6072.0, 2750.0, 12064.0]
+
+# Add a new patient named Priscilla with an associated insurance cost
+names.append("Priscilla")
+insurance_costs.append(8320.0)
+
+# Create Medical Records combined list
+medical_records = list(zip(names, insurance_costs))
+
+# Store the number of records
+num_medical_records = len(medical_records)
+print("There are {} medical records.\n".format(num_medical_records))
+
+# Save and print first record
+first_medical_record = medical_records[0]
+print("Here is the first medical record: {}\n".format(first_medical_record))
+
+# Sort records by ascending cost
+medical_records.sort(key = lambda record: record[1])
+print("Here are the medical records sorted by insurance cost: {}\n".format(medical_records))
+
+# Select and print the cheapest three costs
+cheapest_three = medical_records[:3]
+print("Here are the three cheapest insurance costs in our medical records: {}\n".format(cheapest_three))
+
+# Select and print the costliest three costs
+priciest_three = medical_records[:3]
+print("Here are the three most expensive insurance costs in our medical records: {}\n".format(priciest_three))
+
+# Count and print instances of "Paul"
+occurrences_paul = names.count("Paul")
+print("There are {} individuals with the name Paul in our medical records.\n".format(occurrences_paul))
+
+# Sort medical records by name alphabetically
+medical_records.sort(key = lambda record: record[0])
+print(medical_records)
+print("\n")
+
+# Select the middle five records
+middle_five_records = medical_records[3:8]
+print(middle_five_records)
+print("\n")
+
 # Function analyze_smoker function
 def analyze_smoker(smoker_status):
   if smoker_status == 1:
     print("To lower your cost, you should consider quitting smoking.")
   else:
     print("Good work! Smoking is not an issue for you.")
+    
 # Function to analyze_bmi function
 def analyze_bmi(bmi_value):
   key_bmi_values = [18.5, 25, 30]
@@ -11,15 +56,15 @@ def analyze_bmi(bmi_value):
   change_in_bmi_lower = round(abs(bmi_value - key_bmi_values[0]), 2)
   
   if bmi_value > key_bmi_values[2]:
-    print("Your BMI of " + str(bmi_value) + " is in the obese range. To lower your cost and improve your health, you should significantly lower your BMI by " + str(change_in_bmi_upper) + " to " + str(change_in_bmi_lower) + " points.")
+    print("Your BMI of " + str(bmi_value) + " is in the obese range. To lower your cost and improve your health, you should significantly lower your BMI by " + str(change_in_bmi_upper) + " to " + str(change_in_bmi_lower) + " points.\n")
     
   elif key_bmi_values[1] <= bmi_value <= key_bmi_values[2]:
-    print("Your BMI of " + str(bmi_value) + " is in the overweight range. To lower your cost and improve your health, you should lower your BMI by " + str(change_in_bmi_upper) + " to " + str(change_in_bmi_lower) + " points.")
+    print("Your BMI of " + str(bmi_value) + " is in the overweight range. To lower your cost and improve your health, you should lower your BMI by " + str(change_in_bmi_upper) + " to " + str(change_in_bmi_lower) + " points.\n")
 
   elif 18.5 <= bmi_value < 25:
     print("Great work! Your BMI is in a healthy range.")
   else:
-    print("Your BMI of " + str(bmi_value) + " is in the underweight range. Increasing your BMI will not help lower your cost, but it will help improve your health. You should try to increase your BMI by " + str(change_in_bmi_lower) + " to " + str(change_in_bmi_upper) + " points.")
+    print("Your BMI of " + str(bmi_value) + " is in the underweight range. Increasing your BMI will not help lower your cost, but it will help improve your health. You should try to increase your BMI by " + str(change_in_bmi_lower) + " to " + str(change_in_bmi_upper) + " points.\n")
 
 # Function to estimate insurance cost:
 def estimate_insurance_cost(name, age, sex, bmi, num_of_children, smoker):
@@ -62,9 +107,9 @@ def calculate_insurance_cost_difference(actual_costs, estimated_costs):
     if k > m:
       print(j + "'s estimated insurance cost is " + str(k-m) + " higher than the actual cost.\n")
     elif k < m:
-      print(j + "'s estimated insurance cost is " + str(m-k) + " lower than the actual cost.")
+      print(j + "'s estimated insurance cost is " + str(m-k) + " lower than the actual cost.\n")
     else:
-      print(j + "'s estimated cost is equal to their actual cost!")
+      print(j + "'s estimated cost is equal to their actual cost!\n")
     cost_differences.append(k-m)
   return cost_differences
 
